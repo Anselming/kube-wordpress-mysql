@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordpress
+  namespace: app-wordpress
+  # annotations:
+  #   kubernetes.io/change-cause: "Testes inciais"
+
+  labels:
+    # Recomendações da kubernets (https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/)
+    app.kubernetes.io/name: wordpress
+    app.kubernetes.io/instance: wordpress-mainapp
+    app.kubernetes.io/version: 1.0.0
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: wordpress
+    app.kubernetes.io/managed-by: helm
+
+    # Outros labels comuns
+    envirement: production
+    confidenciality: restrict
+    compliance: none
+
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: wordpress-mainapp
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: wordpress-mainapp
+    spec:
+      containers:
+        - name: wordpress
+          image: wordpress:php8.1-apache
+
+          resources:
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+            requests:
+              memory: "128Mi"
+              cpu: "100m"              
+
+          envFrom:
+            - configMapRef:
+                name: wordpress
+            - secretRef:
+                name: wordpress
+          
+          startupProbe:                 # Estrutura para start apenas desse container. O que parece razoável? Se o banco estiver no ar ok ,mas se não, pode ter que esperar um pouco. Para o start tudo bem.
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 20
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+
+          readinessProbe:               # Essa é a reação mais rápida a falhas. O tráfego é redirecionado. Provavelmente a falha é externa.
+            httpGet:
+              path: /
+              port: 80
+            timeoutSeconds: 10
+            periodSeconds: 30
+            failureThreshold: 1
+
+          livenessProbe:                # Essa é a reação mais lenta, gerando reboot da maquina. Isso considera que a falha é interna. 
+            httpGet:
+              path: /
+              port: 80
+            timeoutSeconds: 20
+            periodSeconds: 60
+            failureThreshold: 1            
+
+
+

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  namespace: app-wordpress
+spec:
+  type: ClusterIP
+  externalName: wordpress.app-wordpress.svc.cluster.local
+  selector:
+    app: wordpress
+  ports:
+  - port: 80
+    protocol: TCP
+    

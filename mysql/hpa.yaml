@@ -1,0 +1,32 @@
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mysql
+  namespace: app-wordpress
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: StatefulSet             # a quem esse destina esse HPA
+    name: wordpress
+  minReplicas: 1                  # mínimo de réplicas. O adequado é 2 ou 3
+  maxReplicas: 3                 # máximo de répllicas. Não existe limite adequad
+  behavior:
+    scaleDown:
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 30
+  metrics:                       # Qual métrica será utilizada?
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80  # Consumo acim de 15% de CPU
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 90  # Consumo acim de 15% de CPU        
+  
