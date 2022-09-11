@@ -43,7 +43,7 @@ metadata:
     app.kubernetes.io/managed-by: helm
 
     # Outros labels comuns
-    envirement: production
+    enviroment: production
     confidenciality: restrict
     compliance: none
 
