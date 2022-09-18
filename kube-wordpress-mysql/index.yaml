@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  kube-wordpress-mysql:
+  - apiVersion: v2
+    appVersion: 0.0.1-alpha
+    created: "2022-09-18T17:42:34.4331878-03:00"
+    description: Helm Chart for Wordpress installation on MySQL database
+    digest: a5f7e8d940f25d3c63623e872b28c79b7d13b2cb7c870f4df53fe8e9dcb2df77
+    name: kube-wordpress-mysql
+    type: application
+    urls:
+    - https://anselming.github.io/kube-wordpress-mysql/kube-wordpress-mysql-0.1.0.tgz
+    version: 0.1.0
+generated: "2022-09-18T17:42:34.4325519-03:00"
