@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-statefulset-mysql
+  labels:
+    {{ range $key, $val := .Values.mysql.labels }}
+      {{ $key }}: {{ $val }}
+    {{ end }}      
+
+spec:
+  serviceName: {{ .Release.Name }}-svc-mysql
+  {{ if not .Values.mysql.autoscalling.enabled }}
+  replicas: 1
+  {{ end }}
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.7
+
+        resources:
+          limits:
+            memory: {{ .Values.mysql.resources.memory_limit | quote }}
+            cpu: {{ .Values.mysql.resources.cpu_limit | quote }}
+          requests:
+            memory: {{ .Values.mysql.resources.memory_requested | quote }}
+            cpu: {{ .Values.mysql.resources.cpu_requested | quote }}
+
+        envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-mysql-configmap
+          - secretRef:
+              name: {{ .Release.Name }}-mysql-secret
+        volumeMounts:
+          - mountPath: /var/lib/mysql2
+            name: mysql-volume-claim
+        startupProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 120
+          timeoutSeconds: 5
+          periodSeconds: 15
+          
+
+        readinessProbe:
+          tcpSocket:
+            port: 3306
+          timeoutSeconds: 5
+          periodSeconds: 30
+
+        livenessProbe:
+          tcpSocket:
+            port: 3306
+          timeoutSeconds: 10
+          periodSeconds: 60         
+
+
+      volumes:
+      - name: mysql-volume-claim
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-google-pvc
+# 

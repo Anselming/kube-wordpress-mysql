@@ -1,30 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wordpress
-  namespace: app-wordpress
-  # annotations:
-  #   kubernetes.io/change-cause: "Testes inciais"
-
+  name: {{ .Release.Name }}-deployment-wordpress
   labels:
-    # Recomendações da kubernets (https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/)
-    app.kubernetes.io/name: wordpress
-    app.kubernetes.io/instance: wordpress-mainapp
-    app.kubernetes.io/version: 1.0.0
-    app.kubernetes.io/component: application
-    app.kubernetes.io/part-of: wordpress
-    app.kubernetes.io/managed-by: helm
-
-    # Outros labels comuns
-    envirement: production
-    confidenciality: restrict
-    compliance: none
+    {{ range $key, $val := .Values.wordpress.labels }}
+      {{ $key }}: {{ $val }}
+    {{ end }}   
 
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/instance: wordpress-mainapp
+  {{ if not .Values.wordpress.autoscalling.enabled }}
   replicas: 1
+  {{ end }}
   template:
     metadata:
       labels:
@@ -36,17 +25,17 @@ spec:
 
           resources:
             limits:
-              memory: "256Mi"
-              cpu: "300m"
+              memory: {{ .Values.wordpress.resources.memory_limit }}
+              cpu: {{ .Values.wordpress.resources.cpu_limit }}
             requests:
-              memory: "128Mi"
-              cpu: "100m"              
+              memory: {{ .Values.wordpress.resources.memory_requested }}
+              cpu: {{ .Values.wordpress.resources.cpu_requested }}           
 
           envFrom:
             - configMapRef:
-                name: wordpress
+                name: {{ .Release.Name }}-wordpress-configmap
             - secretRef:
-                name: wordpress
+                name: {{ .Release.Name }}-wordpress-secret
           
           startupProbe:                 # Estrutura para start apenas desse container. O que parece razoável? Se o banco estiver no ar ok ,mas se não, pode ter que esperar um pouco. Para o start tudo bem.
             httpGet:

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-svc-wordpress
+spec:
+  type: ClusterIP
+  externalName: wordpress.app-wordpress.svc.cluster.local
+  selector:
+    app.kubernetes.io/name: wordpress
+  ports:
+  - port: 80
+    protocol: TCP
+    
